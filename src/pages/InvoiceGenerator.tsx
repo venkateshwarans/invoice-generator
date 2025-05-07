@@ -9,37 +9,54 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 
-import type { InvoiceItem } from '@/types/invoice';
+import type { InvoiceItem, InvoiceFieldConfig } from '@/types/invoice';
 import { numberToWords } from '@/lib/utils';
+import { defaultInvoiceConfig } from '@/config/invoiceConfig';
 
-const initialItem: InvoiceItem = { 
-  id: Date.now(), 
-  description: '', 
-  hsnSac: '', 
-  quantity: 1, 
-  rate: 0, 
-  igstPercent: 0 
-};
 
-const InvoiceGenerator: React.FC = () => {
-  const [darkMode, setDarkMode] = useState<boolean>(false);
-  const [invoiceNumber, setInvoiceNumber] = useState<number>(1);
-  const [invoiceDate, setInvoiceDate] = useState<string>(new Date().toISOString().slice(0, 10));
-  const [dueDate, setDueDate] = useState<string>('');
+interface InvoiceGeneratorProps {
+  config?: InvoiceFieldConfig;
+}
 
-  const [sellerName, setSellerName] = useState<string>('Your Company Name');
-  const [sellerAddress, setSellerAddress] = useState<string>('123 Main St, Anytown, USA');
-  const [sellerGstin, setSellerGstin] = useState<string>('YOUR_GSTIN_HERE');
+const InvoiceGenerator: React.FC<InvoiceGeneratorProps> = ({ config = defaultInvoiceConfig }) => {
+  // Use config for initial state values
+  const [darkMode, setDarkMode] = useState<boolean>(config.ui.darkModeEnabled);
+  const [invoiceNumber, setInvoiceNumber] = useState<number>(Number(config.invoice.number.defaultValue) || 1);
+  const [invoiceDate, setInvoiceDate] = useState<string>(config.invoice.date.defaultValue || new Date().toISOString().slice(0, 10));
+  const [dueDate, setDueDate] = useState<string>(config.invoice.dueDate.defaultValue || '');
 
-  const [billingName, setBillingName] = useState<string>('');
-  const [billingAddress, setBillingAddress] = useState<string>('');
-  const [shippingName, setShippingName] = useState<string>('');
-  const [shippingAddress, setShippingAddress] = useState<string>('');
+  const [sellerName, setSellerName] = useState<string>(config.company.name.defaultValue || 'Your Company Name');
+  const [sellerAddress, setSellerAddress] = useState<string>(config.company.address.defaultValue || '123 Main St, Anytown, USA');
+  const [sellerGstin, setSellerGstin] = useState<string>(config.company.gstin.defaultValue || 'YOUR_GSTIN_HERE');
+  // These fields are defined in the config but not used in the current UI
+  // const [sellerPhone, setSellerPhone] = useState<string>(config.company.phone?.defaultValue || '');
+  // const [sellerEmail, setSellerEmail] = useState<string>(config.company.email?.defaultValue || '');
 
+  const [billingName, setBillingName] = useState<string>(config.client.billingName.defaultValue || '');
+  const [billingAddress, setBillingAddress] = useState<string>(config.client.billingAddress.defaultValue || '');
+  const [shippingName, setShippingName] = useState<string>(config.client.shippingName.defaultValue || '');
+  const [shippingAddress, setShippingAddress] = useState<string>(config.client.shippingAddress.defaultValue || '');
+
+  // Create initial item from config
+  const initialItem: InvoiceItem = {
+    id: Date.now(),
+    description: '',
+    hsnSac: '',
+    quantity: 1,
+    rate: 0,
+    igstPercent: config.taxes.igst.defaultValue || 0,
+    igstAmount: 0,
+    amount: 0
+  };
+  
   const [items, setItems] = useState<InvoiceItem[]>([{ ...initialItem }]);
 
-  const [accountDetails, setAccountDetails] = useState<string>('Bank: Your Bank\nAccount No: 1234567890\nIFSC: YOURIFSC');
-  const [authorizedSignature, setAuthorizedSignature] = useState<string>('Your Name / Company Stamp');
+  const [accountDetails, setAccountDetails] = useState<string>(config.payment.accountDetails.defaultValue || 'Bank: Your Bank\nAccount No: 1234567890\nIFSC: YOURIFSC');
+  const [authorizedSignature, setAuthorizedSignature] = useState<string>(config.payment.authorizedSignature.defaultValue || 'Your Name / Company Stamp');
+  
+  // Currency settings from config - currently not used in the UI but available in the config
+  // const [currency, setCurrency] = useState<string>(config.ui.currency || 'USD');
+  // const [currencySymbol, setCurrencySymbol] = useState<string>(config.ui.currencySymbol || '$');
 
   const invoicePreviewRef = useRef<HTMLDivElement>(null);
 
@@ -113,6 +130,10 @@ const InvoiceGenerator: React.FC = () => {
     clone.style.maxHeight = '1123px';
     clone.style.overflow = 'hidden';
     clone.style.fontFamily = 'Ubuntu, sans-serif';
+    
+    // Remove any existing border on the clone
+    clone.style.border = 'none';
+    clone.style.boxSizing = 'border-box';
     
     document.body.appendChild(container);
     
@@ -437,14 +458,14 @@ const InvoiceGenerator: React.FC = () => {
               <div 
                 id="invoice-preview"
                 ref={invoicePreviewRef} 
-                className="border border-gray-300 bg-white text-black text-xs"
+                className="border border-gray-400 bg-white text-black text-xs"
                 style={{ 
                   aspectRatio: '210/297',
                   width: '100%', 
                   maxWidth: '794px',
-                  padding: '0',
+                  padding: '20px',
                   fontFamily: '"Ubuntu", sans-serif',
-                  margin: '0 auto'
+                  // margin: '20px auto'
                 }}
               >
                 {/* Invoice Header */}
@@ -497,7 +518,7 @@ const InvoiceGenerator: React.FC = () => {
                     </div>
                     <div className="p-2">
                       <p className="font-semibold text-xs">{billingName}</p>
-                      <p className="text-xs">{billingAddress}</p>
+                      <p className="text-xs whitespace-pre-line">{billingAddress}</p>
                     </div>
                   </div>
                   <div>
@@ -506,7 +527,7 @@ const InvoiceGenerator: React.FC = () => {
                     </div>
                     <div className="p-2">
                       <p className="font-semibold text-xs">{shippingName || billingName}</p>
-                      <p className="text-xs">{shippingAddress || billingAddress}</p>
+                      <p className="text-xs whitespace-pre-line">{shippingAddress || billingAddress}</p>
                     </div>
                   </div>
                 </div>
@@ -607,4 +628,5 @@ const InvoiceGenerator: React.FC = () => {
   );
 };
 
+export { InvoiceGenerator };
 export default InvoiceGenerator;
