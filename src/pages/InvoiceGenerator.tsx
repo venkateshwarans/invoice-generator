@@ -95,6 +95,10 @@ const InvoiceGenerator: React.FC = () => {
     const input = invoicePreviewRef.current;
     if (!input) return;
 
+    // A4 dimensions in mm
+    const a4Width = 210;
+    const a4Height = 297;
+    
     // Create a clone of the invoice element to modify before rendering
     const clone = input.cloneNode(true) as HTMLElement;
     const container = document.createElement('div');
@@ -102,6 +106,14 @@ const InvoiceGenerator: React.FC = () => {
     container.style.position = 'absolute';
     container.style.left = '-9999px';
     container.style.top = '-9999px';
+    
+    // Set fixed dimensions to match A4 aspect ratio
+    clone.style.width = '794px'; // 210mm at 96dpi
+    clone.style.minHeight = '1123px'; // 297mm at 96dpi
+    clone.style.maxHeight = '1123px';
+    clone.style.overflow = 'hidden';
+    clone.style.fontFamily = 'Ubuntu, sans-serif';
+    
     document.body.appendChild(container);
     
     // Apply inline styles to replace Tailwind classes that use oklch
@@ -116,18 +128,24 @@ const InvoiceGenerator: React.FC = () => {
     });
     
     // Use html2canvas with the modified clone
-    html2canvas(clone, { scale: 2 })
+    html2canvas(clone, { 
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#ffffff',
+      width: 794, // Fixed width matching A4 proportion
+      height: 1123 // Fixed height matching A4 proportion
+    })
       .then((canvas) => {
         const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-        const imgWidth = canvas.width;
-        const imgHeight = canvas.height;
-        const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-        const imgX = (pdfWidth - imgWidth * ratio) / 2;
-        const imgY = 0;
-        pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+        const pdf = new jsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: 'a4'
+        });
+        
+        // Add the image to exactly fit A4 size
+        pdf.addImage(imgData, 'PNG', 0, 0, a4Width, a4Height);
         pdf.save(`invoice-${invoiceNumber}.pdf`);
         
         // Clean up the temporary container
@@ -417,14 +435,17 @@ const InvoiceGenerator: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div 
+                id="invoice-preview"
                 ref={invoicePreviewRef} 
                 className="border border-gray-300 bg-white text-black text-xs"
                 style={{ 
-                  minHeight: '842px', 
+                  aspectRatio: '210/297',
                   width: '100%', 
+                  maxWidth: '794px',
                   padding: '0',
-                  fontFamily: '"Ubuntu", sans-serif'
-                }} // A4 proportions
+                  fontFamily: '"Ubuntu", sans-serif',
+                  margin: '0 auto'
+                }}
               >
                 {/* Invoice Header */}
                 <div className="grid grid-cols-2 border-b border-gray-300">
