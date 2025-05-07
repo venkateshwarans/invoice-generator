@@ -17,10 +17,11 @@ export interface UseInvoiceConfigReturn {
 export function useInvoiceConfig({ initialConfig = {} }: UseInvoiceConfigProps = {}): UseInvoiceConfigReturn {
   const [config, setConfig] = useState<InvoiceFieldConfig>(mergeConfig(initialConfig));
 
-  // Update config when initialConfig changes
+  // Only set config once on initial mount
+  // Removed the dependency on initialConfig to prevent infinite loops
   useEffect(() => {
     setConfig(mergeConfig(initialConfig));
-  }, [initialConfig]);
+  }, []);
 
   // Function to update the configuration
   const updateConfig = (newConfig: Partial<InvoiceFieldConfig>) => {

@@ -470,7 +470,7 @@ const InvoiceGenerator: React.FC<InvoiceGeneratorProps> = ({ config = defaultInv
               >
                 {/* Invoice Header */}
                 <div className="grid grid-cols-2 border border-gray-300">
-                  <div className="p-4 border-r">
+                  <div className="p-4 border-r border-gray-300">
                     <h2 className="text-base font-bold">{sellerName}</h2>
                     <p className="whitespace-pre-line text-xs">{sellerAddress}</p>
                     <p className="text-xs">India</p>
@@ -483,7 +483,7 @@ const InvoiceGenerator: React.FC<InvoiceGeneratorProps> = ({ config = defaultInv
 
                 {/* Invoice Details */}
                 <div className="grid grid-cols-2 border border-gray-300 border-t-0">
-                  <div className="p-2 border-r">
+                  <div className="p-2 border-r border-gray-300">
                     <table className="w-full text-xs">
                       <tbody>
                         <tr>
@@ -512,8 +512,8 @@ const InvoiceGenerator: React.FC<InvoiceGeneratorProps> = ({ config = defaultInv
 
                 {/* Bill To / Ship To */}
                 <div className="grid grid-cols-2 border border-gray-300 border-t-0">
-                  <div className="border-r">
-                    <div className="p-2 border-b" style={{ backgroundColor: '#f3f4f6' }}>
+                  <div className="border-r border-gray-300">
+                    <div className="p-2 border-b border-gray-300" style={{ backgroundColor: '#f3f4f6' }}>
                       <h3 className="font-bold text-xs">Bill To</h3>
                     </div>
                     <div className="p-2">
@@ -522,7 +522,7 @@ const InvoiceGenerator: React.FC<InvoiceGeneratorProps> = ({ config = defaultInv
                     </div>
                   </div>
                   <div>
-                    <div className="p-2 border-b" style={{ backgroundColor: '#f3f4f6' }}>
+                    <div className="p-2 border-b border-gray-300" style={{ backgroundColor: '#f3f4f6' }}>
                       <h3 className="font-bold text-xs">Ship To</h3>
                     </div>
                     <div className="p-2">
@@ -533,7 +533,7 @@ const InvoiceGenerator: React.FC<InvoiceGeneratorProps> = ({ config = defaultInv
                 </div>
 
                 {/* Invoice Items Table */}
-                <table className="w-full border-collapse text-xs">
+                <table className="w-full border-collapse text-xs border border-gray-300 border-t-0">
                   <thead>
                     <tr style={{ backgroundColor: '#f3f4f6' }}>
                       <th className="p-2 border-b border-r border-gray-300 text-center">#</th>
@@ -541,14 +541,14 @@ const InvoiceGenerator: React.FC<InvoiceGeneratorProps> = ({ config = defaultInv
                       <th className="p-2 border-b border-r border-gray-300 text-center">HSN/SAC</th>
                       <th className="p-2 border-b border-r border-gray-300 text-center">Qty</th>
                       <th className="p-2 border-b border-r border-gray-300 text-right">Rate</th>
-                      <th className="p-2 border-b border-r border-gray-300 text-center" colSpan={2}>
-                        <div className="text-center">IGST</div>
-                        <div className="grid grid-cols-2 border-t border-gray-300 mt-1">
-                          <div className="border-r border-gray-300 py-1">%</div>
-                          <div className="py-1">Amt</div>
+                      <th className="border-b border-r border-gray-300 text-center" colSpan={2} style={{ padding: 0, width: '20%' }}>
+                        <div className="text-center p-2">IGST</div>
+                        <div className="grid grid-cols-2 border-t border-gray-300">
+                          <div className="border-r border-gray-300 p-2 text-center">%</div>
+                          <div className="p-2 text-center">Amt</div>
                         </div>
                       </th>
-                      <th className="p-2 border-b border-r border-gray-300 text-right">Amount</th>
+                      <th className="p-2 border-b border-gray-300 text-right">Amount</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -575,7 +575,7 @@ const InvoiceGenerator: React.FC<InvoiceGeneratorProps> = ({ config = defaultInv
                 
                 {/* Totals Section */}
                 <div className="grid grid-cols-2 border border-gray-300 border-t-0">
-                  <div className="p-2 border-r">
+                  <div className="p-2 border-r border-gray-300">
                     <div className="font-bold mb-2">Total In Words</div>
                     <div className="italic">United States Dollars {totalInWords}</div>
                   </div>
@@ -605,7 +605,7 @@ const InvoiceGenerator: React.FC<InvoiceGeneratorProps> = ({ config = defaultInv
 
                 {/* Bank Details and Signature */}
                 <div className="grid grid-cols-2 border border-gray-300 border-t-0">
-                  <div className="p-2 border-r">
+                  <div className="p-2 border-r border-gray-300">
                     <p className="text-xs mb-1">Tax PAN Card No: {sellerGstin.substring(2, 12)}</p>
                     <p className="text-xs font-bold mb-1">Bank Details</p>
                     <p className="text-xs">Branch: {accountDetails.split('\n')[0].replace('Bank: ', '')}, Salem</p>
