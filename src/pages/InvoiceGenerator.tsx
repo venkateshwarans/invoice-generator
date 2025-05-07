@@ -95,7 +95,28 @@ const InvoiceGenerator: React.FC = () => {
     const input = invoicePreviewRef.current;
     if (!input) return;
 
-    html2canvas(input, { scale: 2 })
+    // Create a clone of the invoice element to modify before rendering
+    const clone = input.cloneNode(true) as HTMLElement;
+    const container = document.createElement('div');
+    container.appendChild(clone);
+    container.style.position = 'absolute';
+    container.style.left = '-9999px';
+    container.style.top = '-9999px';
+    document.body.appendChild(container);
+    
+    // Apply inline styles to replace Tailwind classes that use oklch
+    const elements = clone.querySelectorAll('*');
+    elements.forEach(el => {
+      if (el.classList.contains('bg-gray-100') || el.classList.contains('bg-gray-50')) {
+        (el as HTMLElement).style.backgroundColor = '#f3f4f6';
+      }
+      if (el.classList.contains('border-gray-300')) {
+        (el as HTMLElement).style.borderColor = '#d1d5db';
+      }
+    });
+    
+    // Use html2canvas with the modified clone
+    html2canvas(clone, { scale: 2 })
       .then((canvas) => {
         const imgData = canvas.toDataURL('image/png');
         const pdf = new jsPDF('p', 'mm', 'a4');
@@ -108,6 +129,14 @@ const InvoiceGenerator: React.FC = () => {
         const imgY = 0;
         pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
         pdf.save(`invoice-${invoiceNumber}.pdf`);
+        
+        // Clean up the temporary container
+        document.body.removeChild(container);
+      })
+      .catch((error) => {
+        console.error('Error generating PDF:', error);
+        alert('Error generating PDF. Please check console for details.');
+        document.body.removeChild(container);
       });
   };
 
@@ -441,35 +470,43 @@ const InvoiceGenerator: React.FC = () => {
 
                 {/* Bill To / Ship To */}
                 <div className="grid grid-cols-2 border-b border-gray-300">
-                  <div className="p-2 border-r border-gray-300">
-                    <h3 className="font-bold text-xs mb-1">Bill To</h3>
-                    <p className="font-semibold text-xs">{billingName}</p>
-                    <p className="text-xs">{billingAddress}</p>
+                  <div className="border-r border-gray-300">
+                    <div className="p-2 border-b border-gray-300" style={{ backgroundColor: '#f3f4f6' }}>
+                      <h3 className="font-bold text-xs">Bill To</h3>
+                    </div>
+                    <div className="p-2">
+                      <p className="font-semibold text-xs">{billingName}</p>
+                      <p className="text-xs">{billingAddress}</p>
+                    </div>
                   </div>
-                  <div className="p-2">
-                    <h3 className="font-bold text-xs mb-1">Ship To</h3>
-                    <p className="font-semibold text-xs">{shippingName || billingName}</p>
-                    <p className="text-xs">{shippingAddress || billingAddress}</p>
+                  <div>
+                    <div className="p-2 border-b border-gray-300" style={{ backgroundColor: '#f3f4f6' }}>
+                      <h3 className="font-bold text-xs">Ship To</h3>
+                    </div>
+                    <div className="p-2">
+                      <p className="font-semibold text-xs">{shippingName || billingName}</p>
+                      <p className="text-xs">{shippingAddress || billingAddress}</p>
+                    </div>
                   </div>
                 </div>
 
                 {/* Invoice Items Table */}
                 <table className="w-full border-collapse text-xs">
                   <thead>
-                    <tr>
+                    <tr style={{ backgroundColor: '#f3f4f6' }}>
                       <th className="p-2 border-b border-r border-gray-300 text-center">#</th>
                       <th className="p-2 border-b border-r border-gray-300 text-left">Item & Description</th>
                       <th className="p-2 border-b border-r border-gray-300 text-center">HSN/SAC</th>
                       <th className="p-2 border-b border-r border-gray-300 text-center">Qty</th>
                       <th className="p-2 border-b border-r border-gray-300 text-right">Rate</th>
-                      <th className="p-2 border-b border-gray-300 text-center" colSpan={2}>
+                      <th className="p-2 border-b border-r border-gray-300 text-center" colSpan={2}>
                         <div className="text-center">IGST</div>
                         <div className="grid grid-cols-2 border-t border-gray-300 mt-1">
                           <div className="border-r border-gray-300 py-1">%</div>
                           <div className="py-1">Amt</div>
                         </div>
                       </th>
-                      <th className="p-2 border-b border-gray-300 text-right">Amount</th>
+                      <th className="p-2 border-b border-r border-gray-300 text-right">Amount</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -500,7 +537,7 @@ const InvoiceGenerator: React.FC = () => {
                     <div className="font-bold mb-2">Total In Words</div>
                     <div className="italic">United States Dollars {totalInWords}</div>
                   </div>
-                  <div>
+                  <div className="border-b border-gray-300">
                     <table className="w-full text-xs">
                       <tbody>
                         <tr>
@@ -511,11 +548,11 @@ const InvoiceGenerator: React.FC = () => {
                           <td className="p-2 text-right">IGST0 (0%)</td>
                           <td className="p-2 text-right border-b border-gray-300">{totalIgst.toFixed(2)}</td>
                         </tr>
-                        <tr>
+                        <tr style={{ backgroundColor: '#f9fafb' }}>
                           <td className="p-2 text-right font-bold">Total</td>
                           <td className="p-2 text-right border-b border-gray-300 font-bold">{totalAmount.toFixed(2)}</td>
                         </tr>
-                        <tr>
+                        <tr style={{ backgroundColor: '#f3f4f6' }}>
                           <td className="p-2 text-right font-bold">Balance Due</td>
                           <td className="p-2 text-right font-bold">${totalAmount.toFixed(2)}</td>
                         </tr>
@@ -535,7 +572,7 @@ const InvoiceGenerator: React.FC = () => {
                     <p className="text-xs">Acc Name: {authorizedSignature}</p>
                     <p className="text-xs">Acc Number: {accountDetails.split('\n')[1].replace('Account No: ', '')}</p>
                   </div>
-                  <div className="p-2 text-right">
+                  <div className="p-2 text-right border-l border-gray-300">
                     <div className="h-24"></div>
                     <p className="text-xs font-bold">Authorized Signature</p>
                   </div>

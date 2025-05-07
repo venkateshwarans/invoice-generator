@@ -73,5 +73,11 @@ export function numberToWords(num: number): string {
     }
   }
   
-  return str.trim() ? str.trim().charAt(0).toUpperCase() + str.trim().slice(1) + ' only' : 'Zero only';
+  // Capitalize the first letter of each word
+  const capitalizedStr = str.trim()
+    .split(' ')
+    .map(word => word ? word.charAt(0).toUpperCase() + word.slice(1) : '')
+    .join(' ');
+    
+  return capitalizedStr ? capitalizedStr + ' Only' : 'Zero Only';
 }
